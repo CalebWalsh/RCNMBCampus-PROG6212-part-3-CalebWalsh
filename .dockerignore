@@ -1,9 +1,0 @@
-**/bin/
-**/obj/
-**/.vs/
-.git/
-.github/
-*.user
-*.suo
-README.md
-docs/
