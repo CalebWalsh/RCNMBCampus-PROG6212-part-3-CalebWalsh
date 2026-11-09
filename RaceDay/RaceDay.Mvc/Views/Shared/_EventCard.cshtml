@@ -1,0 +1,22 @@
+@model EventDto
+<article class="bib">
+    <div class="bib-banner">
+        @if (!string.IsNullOrWhiteSpace(Model.BannerImageUrl))
+        {
+            <img src="@Model.BannerImageUrl" alt="@Model.Name banner" loading="lazy" />
+        }
+        else
+        {
+            <div class="banner-ph" aria-hidden="true">@Display.TypeIcon(Model.EventType)</div>
+        }
+    </div>
+    <div class="bib-body">
+        <div class="bib-number">@Display.Distance(Model.DistanceKm)<small>km</small></div>
+        <div class="bib-info">
+            <h3><a asp-controller="Events" asp-action="Details" asp-route-id="@Model.Id">@Model.Name</a></h3>
+            <p class="bib-meta">@Display.Date(Model.EventDate)</p>
+            <p class="bib-meta">@Model.Location</p>
+            <span class="type-tag">@Model.EventType</span>
+        </div>
+    </div>
+</article>

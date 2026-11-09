@@ -1,0 +1,81 @@
+@model EventDetailsVm
+@{
+    ViewData["Title"] = Model.Event.Name;
+    var e = Model.Event;
+    bool isOrganiser = Context.Session.IsRole("Organiser");
+}
+<div class="container">
+    <div class="page-head">
+        <div>
+            <h1>@e.Name</h1>
+            <p>@Display.Date(e.EventDate) | @e.Location | @Display.Distance(e.DistanceKm) km | @e.EventType</p>
+        </div>
+        @if (isOrganiser)
+        {
+            <a class="btn btn-outline-secondary" asp-controller="Organiser" asp-action="Events">Back to events</a>
+        }
+        else
+        {
+            <a class="btn btn-outline-secondary" asp-controller="Participant" asp-action="Index">Back to events</a>
+        }
+    </div>
+
+    <div class="row g-4 mb-5">
+        <div class="col-lg-8">
+            @if (!string.IsNullOrWhiteSpace(e.BannerImageUrl))
+            {
+                <img class="detail-banner mb-4" src="@e.BannerImageUrl" alt="@e.Name event banner" />
+            }
+            else
+            {
+                <div class="banner-ph detail-banner-ph mb-4" aria-hidden="true">@Display.TypeIcon(e.EventType)</div>
+            }
+            <h2>About this event</h2>
+            <p style="white-space: pre-line; max-width: 70ch;">@e.Description</p>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="panel">
+                <h3 class="mb-3">Categories</h3>
+                @if (Model.Categories.Count == 0)
+                {
+                    <p class="text-muted mb-0">The organiser has not added categories yet.</p>
+                }
+                else if (!Model.IsParticipant)
+                {
+                    <ul class="mb-0">
+                        @foreach (var c in Model.Categories)
+                        {
+                            <li>@c.Name</li>
+                        }
+                    </ul>
+                }
+                else if (Model.Enrolment != null)
+                {
+                    <p class="mb-2">You have entered this event.</p>
+                    <p class="mb-1"><strong>Category:</strong> @Model.Enrolment.CategoryName</p>
+                    <partial name="_StatusBadge" model="Model.Enrolment.Status" />
+                }
+                else if (e.EventDate.Date < DateTime.Today)
+                {
+                    <p class="text-muted mb-0">This event has already taken place.</p>
+                }
+                else
+                {
+                    <form asp-controller="Events" asp-action="Enter" method="post">
+                        <input type="hidden" name="eventId" value="@e.Id" />
+                        <label for="categoryId" class="form-label">Choose your category</label>
+                        <select id="categoryId" name="categoryId" class="form-select" required>
+                            <option value="0">Select a category</option>
+                            @foreach (var c in Model.Categories)
+                            {
+                                <option value="@c.Id">@c.Name</option>
+                            }
+                        </select>
+                        <button type="submit" class="btn btn-primary w-100 mt-3">Enter event</button>
+                    </form>
+                }
+            </div>
+        </div>
+    </div>
+</div>

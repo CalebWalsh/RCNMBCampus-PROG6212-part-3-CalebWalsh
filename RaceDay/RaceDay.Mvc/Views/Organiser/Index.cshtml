@@ -1,0 +1,82 @@
+@model OrganiserDashboardVm
+@{
+    ViewData["Title"] = "Dashboard";
+}
+<div class="container">
+    <div class="page-head">
+        <div>
+            <h1>Dashboard</h1>
+            <p>Your events, enrolments and upcoming dates.</p>
+        </div>
+        <a class="btn btn-primary" asp-action="CreateEvent">Create event</a>
+    </div>
+
+    @if (Model.Events.Count == 0)
+    {
+        <div class="empty-state">
+            <strong>You have not created an event yet.</strong>
+            Create your first event to start collecting enrolments.
+            <div class="mt-3"><a class="btn btn-primary" asp-action="CreateEvent">Create event</a></div>
+        </div>
+    }
+    else
+    {
+        <div class="row g-3 mb-4">
+            <div class="col-sm-4"><div class="stat"><div class="stat-number">@Model.TotalEvents</div><div class="stat-label">Events created</div></div></div>
+            <div class="col-sm-4"><div class="stat"><div class="stat-number">@Model.UpcomingEvents</div><div class="stat-label">Upcoming events</div></div></div>
+            <div class="col-sm-4"><div class="stat"><div class="stat-number">@Model.TotalEnrolments</div><div class="stat-label">Total enrolments</div></div></div>
+        </div>
+
+        @if (Model.Next != null)
+        {
+            <div class="next-event mb-4 d-flex flex-wrap justify-content-between align-items-center gap-3">
+                <div>
+                    <p class="mb-1">Next event</p>
+                    <h2>@Model.Next.Event.Name</h2>
+                    <p>@Display.Date(Model.Next.Event.EventDate) at @Model.Next.Event.Location, @Model.Next.EnrolmentCount enrolled</p>
+                </div>
+                <a class="btn btn-primary" asp-action="Enrolments" asp-route-eventId="@Model.Next.Event.Id">View enrolments</a>
+            </div>
+        }
+
+        <div class="table-wrap table-responsive">
+            <table class="table rd-table">
+                <thead>
+                    <tr>
+                        <th>Event</th>
+                        <th>Date</th>
+                        <th>Location</th>
+                        <th class="text-end">Enrolments</th>
+                        <th>Status</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model.Events)
+                    {
+                        <tr>
+                            <td class="fw-semibold">@item.Event.Name</td>
+                            <td>@Display.Date(item.Event.EventDate)</td>
+                            <td>@item.Event.Location</td>
+                            <td class="text-end fw-semibold">@item.EnrolmentCount</td>
+                            <td>
+                                @if (item.IsUpcoming)
+                                {
+                                    <span class="status-badge status-upcoming">@(item.DaysAway == 0 ? "Today" : item.DaysAway == 1 ? "Tomorrow" : $"In {item.DaysAway} days")</span>
+                                }
+                                else
+                                {
+                                    <span class="status-badge status-done">Completed</span>
+                                }
+                            </td>
+                            <td class="text-end text-nowrap">
+                                <a class="btn btn-sm btn-outline-primary" asp-action="Enrolments" asp-route-eventId="@item.Event.Id">Enrolments</a>
+                                <a class="btn btn-sm btn-ink" asp-action="Results" asp-route-eventId="@item.Event.Id">Results</a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>

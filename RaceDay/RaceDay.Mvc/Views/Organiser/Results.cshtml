@@ -1,0 +1,97 @@
+@model ResultsVm
+@{
+    ViewData["Title"] = "Results";
+}
+<div class="container">
+    <div class="page-head">
+        <div>
+            <h1>Results</h1>
+            <p>Capture finish times and positions once an event has finished.</p>
+        </div>
+    </div>
+
+    @if (Model.Selected == null)
+    {
+        <div class="empty-state">
+            <strong>Create an event first.</strong>
+            You can capture results after an event has taken place.
+        </div>
+    }
+    else
+    {
+        <form method="get" asp-action="Results" class="filter-bar row g-2 align-items-end">
+            <div class="col-md-8">
+                <label for="eventId" class="form-label">Event</label>
+                <select id="eventId" name="eventId" class="form-select" onchange="this.form.submit()">
+                    @foreach (var e in Model.Events)
+                    {
+                        <option value="@e.Id" selected="@(e.Id == Model.Selected.Id)">@e.Name (@Display.Date(e.EventDate))</option>
+                    }
+                </select>
+            </div>
+            <div class="col-md-4"><button type="submit" class="btn btn-ink w-100">Show participants</button></div>
+        </form>
+
+        @if (!Model.EventConcluded)
+        {
+            <div class="alert alert-warning">
+                This event takes place on @Display.Date(Model.Selected.EventDate). Results can be captured on or after that date.
+            </div>
+        }
+
+        @if (Model.Enrolments.Count == 0)
+        {
+            <div class="empty-state">
+                <strong>No participants to record.</strong>
+                Nobody has entered @Model.Selected.Name.
+            </div>
+        }
+        else
+        {
+            <div class="table-wrap">
+                <div class="d-none d-md-flex rd-table fw-semibold px-3 py-2 text-white" style="background:var(--ink);">
+                    <div class="flex-grow-1" style="flex-basis:30%">Participant</div>
+                    <div style="flex-basis:18%">Category</div>
+                    <div style="flex-basis:14%">Finish time</div>
+                    <div style="flex-basis:12%">Position</div>
+                    <div style="flex-basis:12%"></div>
+                </div>
+                @foreach (var en in Model.Enrolments)
+                {
+                    <form asp-action="CaptureResult" method="post" class="bg-white border-top px-3 py-2">
+                        <input type="hidden" name="eventId" value="@Model.Selected.Id" />
+                        <input type="hidden" name="enrolmentId" value="@en.Id" />
+                        <div class="row g-2 align-items-center">
+                            <div class="col-md-4">
+                                <div class="fw-semibold">@en.ParticipantName</div>
+                                <partial name="_StatusBadge" model="en.Status" />
+                            </div>
+                            <div class="col-md-2">@en.CategoryName</div>
+                            <div class="col-6 col-md-2">
+                                <label class="visually-hidden" for="time-@en.Id">Finish time for @en.ParticipantName</label>
+                                <input id="time-@en.Id" name="finishTime" class="form-control" placeholder="00:45:12"
+                                       value="@(en.FinishTime.HasValue ? Display.Time(en.FinishTime) : "")" disabled="@(!Model.EventConcluded || en.HasResult)" />
+                            </div>
+                            <div class="col-6 col-md-2">
+                                <label class="visually-hidden" for="pos-@en.Id">Finishing position for @en.ParticipantName</label>
+                                <input id="pos-@en.Id" name="finishingPosition" type="number" min="1" class="form-control" placeholder="1"
+                                       value="@(en.FinishingPosition.HasValue ? en.FinishingPosition.Value.ToString() : "")" disabled="@(!Model.EventConcluded || en.HasResult)" />
+                            </div>
+                            <div class="col-md-2 text-md-end">
+                                @if (en.HasResult)
+                                {
+                                    <span class="text-muted small">Result saved</span>
+                                }
+                                else
+                                {
+                                    <button type="submit" class="btn btn-primary btn-sm" disabled="@(!Model.EventConcluded)">Save result</button>
+                                }
+                            </div>
+                        </div>
+                    </form>
+                }
+            </div>
+            <p class="mt-2 text-muted">Enter the finish time as hours:minutes:seconds, for example 00:45:12.</p>
+        }
+    }
+</div>

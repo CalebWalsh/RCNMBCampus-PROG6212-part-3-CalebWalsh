@@ -1,0 +1,91 @@
+@model CategoriesVm
+@{
+    ViewData["Title"] = "Categories";
+}
+<div class="container">
+    <div class="page-head">
+        <div>
+            <h1>Categories</h1>
+            <p>Add age or distance categories to each event.</p>
+        </div>
+    </div>
+
+    @if (Model.Selected == null)
+    {
+        <div class="empty-state">
+            <strong>Create an event first.</strong>
+            Categories belong to an event.
+            <div class="mt-3"><a class="btn btn-primary" asp-action="CreateEvent">Create event</a></div>
+        </div>
+    }
+    else
+    {
+        <form method="get" asp-action="Categories" class="filter-bar row g-2 align-items-end">
+            <div class="col-md-8">
+                <label for="eventId" class="form-label">Event</label>
+                <select id="eventId" name="eventId" class="form-select" onchange="this.form.submit()">
+                    @foreach (var e in Model.Events)
+                    {
+                        <option value="@e.Id" selected="@(e.Id == Model.Selected.Id)">@e.Name (@Display.Date(e.EventDate))</option>
+                    }
+                </select>
+            </div>
+            <div class="col-md-4"><button type="submit" class="btn btn-ink w-100">Show categories</button></div>
+        </form>
+
+        <div class="row g-4">
+            <div class="col-lg-7">
+                @if (Model.Categories.Count == 0)
+                {
+                    <div class="empty-state">
+                        <strong>No categories for this event yet.</strong>
+                        Add one, for example 10 km, 5 km or Under 20.
+                    </div>
+                }
+                else
+                {
+                    <div class="table-wrap">
+                        <table class="table rd-table">
+                            <thead><tr><th>Category</th><th>Entry fee</th><th>Max participants</th><th></th></tr></thead>
+                            <tbody>
+                                @foreach (var c in Model.Categories)
+                                {
+                                    <tr>
+                                        <td class="fw-semibold">@c.Name</td>
+                                        <td>@c.EntryFee.ToString("0.00")</td>
+                                        <td>@(c.MaxParticipants.HasValue ? c.MaxParticipants.Value.ToString() : "No limit")</td>
+                                        <td class="text-end">
+                                            <form asp-action="DeleteCategory" method="post" class="d-inline"
+                                                  onsubmit="return confirm('Delete this category?');">
+                                                <input type="hidden" name="eventId" value="@Model.Selected.Id" />
+                                                <input type="hidden" name="categoryId" value="@c.Id" />
+                                                <button type="submit" class="btn btn-sm btn-outline-danger">Delete</button>
+                                            </form>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+            </div>
+            <div class="col-lg-5">
+                <div class="panel">
+                    <h3 class="mb-3">Add a category</h3>
+                    <form asp-action="AddCategory" method="post">
+                        <input type="hidden" name="eventId" value="@Model.Selected.Id" />
+                        <label for="name" class="form-label">Category name</label>
+                        <input id="name" name="name" class="form-control" maxlength="50" required />
+                        <label for="entryFee" class="form-label mt-3">Entry fee (R)</label>
+                        <input id="entryFee" name="entryFee" type="number" min="0" step="0.01" value="0" class="form-control" />
+                        <label for="maxParticipants" class="form-label mt-3">Max participants (optional)</label>
+                        <input id="maxParticipants" name="maxParticipants" type="number" min="1" class="form-control" />
+                        <label for="minAge" class="form-label mt-3">Minimum age (optional)</label>
+                        <input id="minAge" name="minAge" type="number" min="0" max="120" class="form-control" />
+                        <button type="submit" class="btn btn-primary mt-3">Add category</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    }
+</div>

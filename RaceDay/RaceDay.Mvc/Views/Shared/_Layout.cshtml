@@ -1,0 +1,107 @@
+@{
+    var loggedIn = Context.Session.IsLoggedIn();
+    var isOrganiser = Context.Session.IsRole("Organiser");
+    var displayName = Context.Session.GetString("DisplayName") ?? string.Empty;
+    var avatar = Context.Session.GetString("AvatarUrl");
+    var controller = ViewContext.RouteData.Values["controller"]?.ToString();
+    var action = ViewContext.RouteData.Values["action"]?.ToString();
+    string Active(string c, params string[] a) =>
+        string.Equals(controller, c, StringComparison.OrdinalIgnoreCase) &&
+        a.Any(x => string.Equals(action, x, StringComparison.OrdinalIgnoreCase)) ? "active" : "";
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - RaceDay</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+</head>
+<body>
+    <header>
+        <nav class="navbar navbar-expand-lg rd-nav">
+            <div class="container">
+                <a class="rd-brand" asp-controller="Home" asp-action="Index">
+                    <span class="rd-brand-mark">RD</span>RaceDay
+                </a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav"
+                        aria-controls="mainNav" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="collapse navbar-collapse" id="mainNav">
+                    <ul class="navbar-nav me-auto">
+                        @if (loggedIn && isOrganiser)
+                        {
+                            <li class="nav-item"><a class="nav-link @Active("Organiser", "Index")" asp-controller="Organiser" asp-action="Index">Dashboard</a></li>
+                            <li class="nav-item"><a class="nav-link @Active("Organiser", "Events", "CreateEvent", "EditEvent")" asp-controller="Organiser" asp-action="Events">Events</a></li>
+                            <li class="nav-item"><a class="nav-link @Active("Organiser", "Categories")" asp-controller="Organiser" asp-action="Categories">Categories</a></li>
+                            <li class="nav-item"><a class="nav-link @Active("Organiser", "Enrolments")" asp-controller="Organiser" asp-action="Enrolments">Enrolments</a></li>
+                            <li class="nav-item"><a class="nav-link @Active("Organiser", "Results")" asp-controller="Organiser" asp-action="Results">Results</a></li>
+                        }
+                        else if (loggedIn)
+                        {
+                            <li class="nav-item"><a class="nav-link @Active("Participant", "Index")" asp-controller="Participant" asp-action="Index">Events</a></li>
+                            <li class="nav-item"><a class="nav-link @Active("Participant", "MyEvents")" asp-controller="Participant" asp-action="MyEvents">My events</a></li>
+                            <li class="nav-item"><a class="nav-link @Active("Participant", "MyResults")" asp-controller="Participant" asp-action="MyResults">My results</a></li>
+                            <li class="nav-item"><a class="nav-link @Active("Participant", "Profile")" asp-controller="Participant" asp-action="Profile">Profile</a></li>
+                        }
+                    </ul>
+                    <ul class="navbar-nav align-items-lg-center gap-lg-2">
+                        @if (loggedIn)
+                        {
+                            <li class="nav-item d-flex align-items-center gap-2 py-2">
+                                @if (!string.IsNullOrWhiteSpace(avatar))
+                                {
+                                    <img class="avatar" src="@avatar" alt="" />
+                                }
+                                else
+                                {
+                                    <span class="avatar" aria-hidden="true">@(displayName.Length > 0 ? displayName.Substring(0, 1).ToUpperInvariant() : "R")</span>
+                                }
+                                <span class="text-white fw-semibold">@displayName</span>
+                                <span class="role-tag">@(isOrganiser ? "Organiser" : "Participant")</span>
+                            </li>
+                            <li class="nav-item">
+                                <form asp-controller="Auth" asp-action="Logout" method="post">
+                                    <button type="submit" class="btn btn-outline-light btn-sm">Log out</button>
+                                </form>
+                            </li>
+                        }
+                        else
+                        {
+                            <li class="nav-item"><a class="nav-link @Active("Auth", "Login")" asp-controller="Auth" asp-action="Login">Log in</a></li>
+                            <li class="nav-item"><a class="btn btn-primary btn-sm" asp-controller="Auth" asp-action="Register">Register</a></li>
+                        }
+                    </ul>
+                </div>
+            </div>
+        </nav>
+        <div class="lane-strip" aria-hidden="true"></div>
+    </header>
+
+    <main>
+        <div class="container">
+            @if (TempData["Success"] is string successMessage)
+            {
+                <div class="alert alert-success mt-4 mb-0" role="status">@successMessage</div>
+            }
+            @if (TempData["Error"] is string errorMessage)
+            {
+                <div class="alert alert-danger mt-4 mb-0" role="alert">@errorMessage</div>
+            }
+        </div>
+        @RenderBody()
+    </main>
+
+    <footer class="rd-footer">
+        <div class="container">RaceDay &copy; @DateTime.Now.Year</div>
+    </footer>
+
+    <script src="~/lib/jquery/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/js/bootstrap.bundle.min.js"></script>
+    <script src="~/lib/jquery-validation/jquery.validate.min.js"></script>
+    <script src="~/lib/jquery-validation-unobtrusive/jquery.validate.unobtrusive.min.js"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>
