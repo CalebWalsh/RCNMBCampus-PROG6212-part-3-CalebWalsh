@@ -1,0 +1,42 @@
+@model List<ResultDto>
+@{
+    ViewData["Title"] = "My results";
+}
+<div class="container">
+    <div class="page-head">
+        <div>
+            <h1>My results</h1>
+            <p>Your race history across completed events.</p>
+        </div>
+    </div>
+
+    @if (Model.Count == 0)
+    {
+        <div class="empty-state">
+            <strong>No results yet.</strong>
+            Your finish time and position appear here after an organiser records them.
+        </div>
+    }
+    else
+    {
+        <div class="table-wrap table-responsive">
+            <table class="table rd-table">
+                <thead>
+                    <tr><th>Event</th><th>Date</th><th>Category</th><th>Finish time</th><th>Position</th></tr>
+                </thead>
+                <tbody>
+                    @foreach (var r in Model)
+                    {
+                        <tr>
+                            <td class="fw-semibold">@r.EventName</td>
+                            <td>@Display.Date(r.EventDate)</td>
+                            <td>@r.CategoryName</td>
+                            <td>@Display.Time(r.FinishTime)</td>
+                            <td class="fw-semibold">@Display.Position(r.FinishingPosition, r.TotalFinishers) @(r.TotalFinishers > 0 ? "finishers" : "")</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>

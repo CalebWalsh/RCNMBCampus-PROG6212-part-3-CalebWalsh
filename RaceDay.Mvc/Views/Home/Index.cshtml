@@ -1,0 +1,65 @@
+@{
+    ViewData["Title"] = "Welcome";
+    var loggedIn = Context.Session.IsLoggedIn();
+    var isOrganiser = Context.Session.IsRole("Organiser");
+}
+<section class="hero">
+    <div class="container">
+        <div class="row align-items-center g-5">
+            <div class="col-lg-7">
+                <h1 class="hero-title">Pick your start line.</h1>
+                <p class="hero-lead">
+                    Find upcoming runs, walks and cycle events, enter in under a minute, and see your finish time and
+                    position as soon as the organiser publishes the results.
+                </p>
+                <div class="d-flex flex-wrap gap-2">
+                    @if (loggedIn && isOrganiser)
+                    {
+                        <a class="btn btn-primary btn-lg" asp-controller="Organiser" asp-action="Index">Open dashboard</a>
+                        <a class="btn btn-outline-light btn-lg" asp-controller="Organiser" asp-action="CreateEvent">Create an event</a>
+                    }
+                    else if (loggedIn)
+                    {
+                        <a class="btn btn-primary btn-lg" asp-controller="Participant" asp-action="Index">Browse events</a>
+                        <a class="btn btn-outline-light btn-lg" asp-controller="Participant" asp-action="MyEvents">My events</a>
+                    }
+                    else
+                    {
+                        <a class="btn btn-primary btn-lg" asp-controller="Auth" asp-action="Register">Create an account</a>
+                        <a class="btn btn-outline-light btn-lg" asp-controller="Auth" asp-action="Login">Log in</a>
+                    }
+                </div>
+            </div>
+            <div class="col-lg-5 d-none d-lg-block" aria-hidden="true">
+                <div class="hero-bib">
+                    <div class="hero-bib-label">RaceDay</div>
+                    <div class="hero-bib-number">4021</div>
+                    <div class="hero-bib-foot">10 km &nbsp;|&nbsp; Run</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="container py-5">
+    <div class="row g-5">
+        <div class="col-md-6 role-block">
+            <h2>If you are racing</h2>
+            <ul class="role-list">
+                <li>Browse upcoming events and filter by type, name or location.</li>
+                <li>Pick a category and enter the event straight away.</li>
+                <li>Follow your enrolment status under My events.</li>
+                <li>Check your finish time and position under My results.</li>
+            </ul>
+        </div>
+        <div class="col-md-6 role-block">
+            <h2>If you are organising</h2>
+            <ul class="role-list">
+                <li>Create events with a banner image, date, location and distance.</li>
+                <li>Add age or distance categories to each event.</li>
+                <li>See who has enrolled and in which category.</li>
+                <li>Capture finish times and positions after the event.</li>
+            </ul>
+        </div>
+    </div>
+</section>
